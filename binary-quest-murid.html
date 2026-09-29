@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BINARY QUEST - Misi Sandi Rahasia</title>
+<style>
+:root{--bg:#050b10;--pn:#0b1a22;--bd:#14424f;--g:#39ff88;--c:#3cd8ff;--t:#d5f5e6;--m:#7ba3a3;--r:#ff6b6b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--t);font:16px/1.5 ui-monospace,Menlo,Consolas,monospace;min-height:100vh}
+#app{max-width:720px;margin:0 auto;padding:14px}
+h1{color:var(--g);text-align:center;letter-spacing:3px;margin:8px 0;text-shadow:0 0 12px var(--g)}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}
+.sub{color:var(--m);text-align:center;margin:0 0 8px}
+input{width:100%;background:#03080c;border:1px solid var(--bd);color:var(--g);border-radius:8px;padding:10px;font:inherit;font-size:18px;margin:6px 0}
+input:focus{outline:2px solid var(--c)}
+label{color:var(--c);font-size:14px}
+button{background:var(--g);color:#03110a;border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;margin:4px 4px 4px 0}
+button.s{background:transparent;color:var(--c);border:1px solid var(--c)}
+button:hover{filter:brightness(1.15)}
+#top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;color:var(--m);font-size:14px}
+#bar{height:6px;background:#0d2530;border-radius:4px;overflow:hidden;margin-top:6px}
+#bar i{display:block;height:100%;background:var(--c);width:100%;transition:width .25s linear}
+#msg{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center}
+.w{display:flex;gap:4px}
+.ch{width:30px;height:38px;border:1px solid var(--bd);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--m);background:#03080c}
+.ch.on{color:var(--g);border-color:var(--g);text-shadow:0 0 8px var(--g)}
+.ch.new{animation:dec .9s}
+@keyframes dec{0%{transform:scale(1.6);background:var(--g);color:#000}100%{transform:scale(1)}}
+.q{font-size:18px}
+.lamp{width:84px;height:84px;border-radius:50%;margin:8px auto;background:#0d2530;border:3px solid var(--bd)}.lamp.on{background:#ffe066;box-shadow:0 0 40px 10px #ffe066;border-color:#fff3b0}
+.code{font-size:26px;letter-spacing:5px;color:var(--c);text-align:center;margin:10px 0;word-break:break-all}
+.sw{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:12px 0}
+.sw button{margin:0;padding:10px 0;background:#03080c;color:var(--m);border:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;gap:4px}
+.sw button.on{background:var(--g);color:#03110a;box-shadow:0 0 12px var(--g)}
+.sw small{font-size:11px;opacity:.8}
+.bits{display:flex;gap:5px;justify-content:center;margin:12px 0}
+.bits button{margin:0;width:38px;padding:10px 0;background:#03080c;color:var(--c);border:1px solid var(--c);font-size:20px}
+.ok{color:var(--g)}.no{color:var(--r)}
+.ex{border-left:3px solid var(--c);padding:4px 12px;margin:10px 0;white-space:pre-wrap;color:var(--t)}
+.big{font-size:28px;color:var(--g);text-align:center;text-shadow:0 0 14px var(--g);margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid var(--bd);padding:6px;text-align:left}
+@media(max-width:480px){.ch{width:22px;height:30px;font-size:15px}.lamp{width:84px;height:84px;border-radius:50%;margin:8px auto;background:#0d2530;border:3px solid var(--bd)}.lamp.on{background:#ffe066;box-shadow:0 0 40px 10px #ffe066;border-color:#fff3b0}
+.code{font-size:20px;letter-spacing:2px}}
+</style></head><body><div id="app">
+<h1>BINARY QUEST</h1>
+<div id="main"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const b8=n=>n.toString(2).padStart(8,'0');
+const W=[128,64,32,16,8,4,2,1];
+const LV=[
+ {n:'Nyalakan Lampu',t:90,s:'Ruang server gelap! Nyalakan lampu (saklar) hingga membentuk angka yang diminta.'},
+ {n:'Sandi Lampu Kedip',t:120,s:'Lampu menara mengirim sandi lewat kedipan. Lampu MENYALA = 1, MATI = 0. Catat 8 kedipan (bit), lalu ubah ke desimal. Putar ulang sebanyak perlu.'},
+ {n:'Bongkar Sandi',t:90,s:'Brankas terkunci kode biner. Ubah menjadi PIN desimal.'},
+ {n:'Bangun Sandi',t:90,s:'Pusat meminta kunci biner untuk nomor huruf tertentu (A=1, B=2, ... Z=26).'},
+ {n:'Penerjemah Cepat',t:45,s:'Sinyal datang bertubi-tubi. Terjemahkan dua arah: biner dan desimal.'},
+ {n:'Misi Akhir: Sandi ASCII',t:60,s:'Komputer mengirim pesan dalam kode ASCII. Huruf besar A = 65, B = 66, dan seterusnya.'}];
+let S,tm,left,cur;
+
+const MODE='murid';
+const enc=t=>btoa([...t].reverse().join('')),dec=c=>{try{return[...atob(c.trim())].reverse().join('')}catch(e){return''}};
+const BANK=["KAMU HEBAT", "BINER ITU SERU", "TERIMA KASIH AGEN", "SEMANGAT BELAJAR", "AYO PANTANG MENYERAH", "KAMU PASTI BISA", "INFORMATIKA ITU ASYIK", "COBA LAGI PASTI BISA", "KERJA BAGUS", "BELAJAR ITU MENYENANGKAN", "TETAP SEMANGAT", "JUJUR ITU KEREN", "BERANI MENCOBA", "KOMPUTER ITU SERU", "SANDI BERHASIL TERBUKA", "SELAMAT AGEN", "HARI INI HEBAT", "GOTONG ROYONG", "RAJIN PANGKAL PANDAI", "MISI SELESAI"];
+const sc=i=>(i*2749+3517)%9000+1000;
+function fromCode(v){v=v.trim();if(!v)return'KAMU HEBAT';if(/^\d+$/.test(v)){const i=BANK.findIndex((_,k)=>sc(k)===+v);return i<0?null:BANK[i]}const d=dec(v);return d?clean(d):null}
+function home(){
+ const T=MODE==='guru';
+ $('main').innerHTML=`<p class="sub">Misi Sandi Rahasia ${T?'· VERSI GURU':'· VERSI MURID'}</p><div class="card">
+ <label>Nama agen</label><input id="nm" maxlength="24" placeholder="Nama murid">
+ ${T?`<div style="border-top:1px solid var(--bd);margin-top:10px;padding-top:8px"><label>Pengaturan guru: pilih kalimat dari daftar (kode 4 angka)</label><select id="pick" onchange="if(this.value)$('sent').value=this.value" style="width:100%;background:#03080c;color:var(--g);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit;margin:6px 0"><option value="">- pilih -</option>${BANK.map(b=>`<option>${b}</option>`).join('')}</select><label>atau ketik kalimat sendiri (huruf A-Z dan spasi)</label><input id="sent" value="KAMU HEBAT" maxlength="30"><button class="s" onclick="mkCode()">BUAT KODE KELAS</button><div id="kc"></div></div>`
+ :`<label>Kode kelas dari guru (kosongkan untuk pesan bawaan)</label><input id="kode" autocomplete="off" inputmode="numeric"><div id="kerr" class="no"></div>`}
+ <button onclick="start()">MULAI MISI</button></div>`;
+}
+function mkCode(){const t=clean($('sent').value),i=BANK.indexOf(t),c=i>=0?String(sc(i)):enc(t);
+ $('kc').innerHTML=`<div class="ex">Kalimat: <b>${esc(t)}</b>\nKode kelas (bagikan ke murid):</div><input readonly id="kv" value="${c}" onclick="this.select()" style="font-size:${i>=0?32:16}px;letter-spacing:${i>=0?6:0}px"><button class="s" onclick="kv.select();document.execCommand('copy')">Salin kode</button>${i>=0?'':'<div style="color:var(--m);font-size:13px">Kalimat buatan sendiri memakai kode panjang. Pilih dari daftar untuk mendapat kode 4 angka.</div>'}`}
+function clean(x){return(x||'').toUpperCase().replace(/[^A-Z ]/g,'').replace(/\s+/g,' ').trim()||'KAMU HEBAT'}
+function start(){
+ let sent=MODE==='guru'?clean($('sent').value):fromCode($('kode').value);if(!sent){$('kerr').textContent='Kode kelas tidak dikenali. Periksa kembali dengan guru.';return}
+ sent=sent.toUpperCase();
+ const pos=[];[...sent].forEach((c,i)=>{if(c!==' ')pos.push(i)});
+ const N=pos.length,lv=[];
+ for(let i=0;i<LV.length;i++){const p=pos.slice(Math.floor(i*N/LV.length),Math.floor((i+1)*N/LV.length));if(p.length)lv.push({i,p,w:0})}
+ S={name:($('nm').value||'Agen').trim(),sent,rev:new Set(),lv,li:0,ok:0,bad:0,t0:Date.now(),q:[]};
+ $('main').innerHTML=`<div class="card"><div class="q">Agen <b class="ok">${esc(S.name)}</b>, pusat mengirim pesan rahasia yang terkunci kode biner. Selesaikan semua sandi untuk membacanya.<br><br>
+ 1. Jawab soal.<br>2. Soal yang sulit boleh dilewati, nanti muncul lagi di akhir level.<br>3. Kumpulkan huruf pesan.</div><div id="mp"></div>
+ <button onclick="lvStart()">Mulai Level 1</button></div>`;
+ $('mp').outerHTML='<div id="msg"></div>';drawMsg();
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function drawMsg(nw){
+ $('msg').innerHTML=S.sent.split(' ').map((w,wi,arr)=>{
+  let off=arr.slice(0,wi).join(' ').length+(wi?1:0);
+  return '<div class="w">'+[...w].map((c,i)=>{const p=off+i,on=S.rev.has(p);return `<span class="ch ${on?'on':''} ${nw===p?'new':''}">${on?c:'_'}</span>`}).join('')+'</div>'}).join('');
+}
+function shell(inner){
+ const L=S.lv[S.li];
+ $('main').innerHTML=`<div class="card"><div id="top"><span>Level ${L.i+1}: ${LV[L.i].n}</span><button class="s" onclick="guess()">TEBAK PESAN</button></div></div>
+ <div class="card"><div style="text-align:center;color:var(--m);font-size:13px">PESAN TERENKRIPSI</div><div id="msg"></div></div><div class="card" id="qc">${inner||''}</div>`;
+ drawMsg();
+}
+function lvStart(){
+ const L=S.lv[S.li];
+ S.q=L.p.map(p=>mk(L.i,p,false));
+ shell(`<div class="q"><b class="ok">Level ${L.i+1}: ${LV[L.i].n}</b><br>${LV[L.i].s}</div><button onclick="nextQ()">Mulai</button>`);
+}
+function mk(li,p,retry){
+ const ch=S.sent[p],n=ch.charCodeAt(0)-64;
+ let type=['sw','lamp','b2d','d2b',Math.random()<.5?'b2d':'d2b','asc'][li];
+ const lv=S.lv[S.li];
+ if(li===5&&p===lv.p[lv.p.length-1]&&lv.p.length>1)type='bug';
+ return {p,ch,n,type,k:Math.floor(Math.random()*8),retry:false};
+}
+function nextQ(){
+ stop();
+ if(!S.q.length)return lvEnd();
+ cur=S.q.shift();cur.stopped=0;const q=cur,L=S.lv[S.li];
+ let h='';
+ const need=`<div class="q">Pesan butuh huruf ke-${S.sent.length?'berikutnya':''}.</div>`;
+ if(q.type==='lamp'){q.busy=0;
+  h=`<div class="q">Amati lampu. <b>Menyala = 1</b>, <b>mati = 0</b>.</div><div style="text-align:center"><div class="lamp" id="lp"></div><div id="ls" style="color:var(--m)">Tekan tombol untuk memutar kedipan.</div><button class="s" onclick="play()">▶ Putar Kedipan</button></div><label>8 bit yang kamu catat (urut dari kedipan pertama)</label><input id="in" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="00000000"><label>Nilai desimalnya</label><input id="in2" inputmode="numeric" autocomplete="off">`}
+ else if(q.type==='sw'){q.ans=q.n;
+  h=`<div class="q">Nyalakan lampu hingga membentuk angka <b class="ok">${q.n}</b>.</div><div class="sw" id="sw">${W.map((w,i)=>`<button data-i="${i}" onclick="tg(this)">0<small>${w}</small></button>`).join('')}</div><div id="sv" style="text-align:center;color:var(--m)">Jumlah: 0</div>`}
+ else if(q.type==='b2d'){q.ans=q.n;
+  h=`<div class="q">Kode brankas:</div><div class="code">${b8(q.n)}</div><div class="q">Berapa PIN desimalnya?</div><input id="in" inputmode="numeric" autocomplete="off">`}
+ else if(q.type==='d2b'){
+  h=`<div class="q">Pusat meminta kunci untuk nomor <b class="ok">${q.n}</b>. Tulis kunci binernya (8 bit).</div><input id="in" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="00000000">`}
+ else if(q.type==='asc'){
+  h=`<div class="q">Kode ASCII dari komputer:</div><div class="code">${b8(q.n+64)}</div><div class="q">Huruf apa yang dikirim?</div><input id="in" maxlength="1" autocomplete="off">`}
+ else{q.code=b8(q.n+64).split('');q.code[q.k]=q.code[q.k]==='1'?'0':'1';
+  h=`<div class="q">Kode ini terganggu Hacker: <b>satu bit salah</b>. Klik bit yang salah!</div><div class="bits">${q.code.map((b,i)=>`<button onclick="bug(${i})">${b}</button>`).join('')}</div>`}
+ h+=`<div id="fb"></div>`;
+ if(q.type!=='sw'&&q.type!=='bug')h+=`<button onclick="chk()">KUNCI JAWABAN</button>`;
+ if(q.type==='sw')h+=`<button onclick="chk()">KUNCI JAWABAN</button>`;
+ h+=`<button class="s" onclick="skip()">Lewati soal ▶</button>`;
+ shell(h);
+ const inp=$('in');if(inp){inp.focus();inp.onkeydown=e=>{if(e.key==='Enter')chk()}}
+ 
+}
+function tick(){
+ const t=cur.t;
+ if($('tl'))$('tl').textContent='⏱ '+left+' dtk';
+ if($('bi'))$('bi').style.width=(left/t*100)+'%';
+ if(left<=0){stop();fin(false,true)}left--;
+}
+function skip(){if(!S.q.length){$('fb').innerHTML='<div class="q" style="color:var(--m)">Ini soal terakhir di level ini. Yuk dijawab dulu.</div>';return}S.q.push(cur);nextQ()}
+function stop(){clearInterval(tm);if(cur)cur.stopped=1}
+const ones=n=>b8(n).split('1').length-1;
+function qt(q,li){let t={sw:30+2*ones(q.n),lamp:75,b2d:25+5*ones(q.n),d2b:25+6*q.n.toString(2).length,asc:35+5*ones(q.n+64),bug:45}[q.type];if(li===4)t*=.7;if(q.retry)t*=1.25;return Math.max(20,Math.round(t))}
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
+async function play(){const q=cur;if(q.busy)return;q.busy=1;const bits=b8(q.n);await sl(800);
+ for(let i=0;i<8;i++){const lp=$('lp');if(cur!==q||q.stopped||!lp)break;$('ls').textContent='Kedipan ke-'+(i+1)+' dari 8';lp.classList.toggle('on',bits[i]==='1');await sl(1000);lp.classList.remove('on');await sl(350)}
+ if(cur===q&&$('ls'))$('ls').textContent='Selesai. Putar ulang jika perlu.';q.busy=0}
+function tg(b){const on=!b.classList.contains('on');b.classList.toggle('on',on);b.firstChild.nodeValue=on?'1':'0';
+ $('sv').textContent='Jumlah: '+[...document.querySelectorAll('#sw .on')].reduce((a,x)=>a+W[+x.dataset.i],0)}
+function chk(){
+ const q=cur;let ok=false,v;
+ if(q.type==='sw')ok=[...document.querySelectorAll('#sw .on')].reduce((a,x)=>a+W[+x.dataset.i],0)===q.n;
+ else if(q.type==='lamp'){const a=$('in').value.trim(),b=$('in2').value.trim();if(!a||!b)return;ok=a===b8(q.n)&&+b===q.n}
+ else{v=$('in').value.trim();if(!v)return;
+  if(q.type==='b2d')ok=+v===q.n;
+  else if(q.type==='d2b')ok=/^[01]+$/.test(v)&&parseInt(v,2)===q.n;
+  else ok=v.toUpperCase()===q.ch}
+ stop();fin(ok,false);
+}
+function bug(i){stop();fin(i===cur.k,false)}
+function explain(q){
+ if(q.type==='sw'||q.type==='b2d'||q.type==='lamp'){const c=b8(q.n),t=[...c].map((b,i)=>b==='1'?W[i]:null).filter(x=>x);
+  return `${c} = ${t.join(' + ')} = ${q.n}. Setiap bit 1 menambah nilai posisinya (128-64-32-16-8-4-2-1).`}
+ if(q.type==='d2b'){let x=q.n,s=[];while(x>0){s.push(`${x} : 2 = ${x>>1} sisa ${x%2}`);x>>=1}
+  return s.join('\n')+`\nBaca sisa dari bawah ke atas: ${q.n.toString(2)}, jadi kuncinya ${b8(q.n)}.`}
+ if(q.type==='asc'){const c=b8(q.n+64),t=[...c].map((b,i)=>b==='1'?W[i]:null).filter(x=>x);
+  return `${c} = ${t.join(' + ')} = ${q.n+64}. Kode ASCII ${q.n+64} adalah huruf ${q.ch}.`}
+ const good=b8(q.n+64);return `Bit yang salah adalah bit ke-${q.k+1} dari kiri. Setelah diperbaiki: ${good} = ${q.n+64} = huruf ${q.ch}.`;
+}
+function fin(ok,to){
+ const q=cur,L=S.lv[S.li];
+ document.querySelectorAll('#qc button,#qc input').forEach(e=>e.disabled=true);
+ if(ok){
+  if(!q.retry)S.ok++;
+  S.rev.add(q.p);drawMsg(q.p);
+  $('fb').innerHTML=`<div class="ok q">✅ Benar! Huruf <b>${q.ch}</b> terbuka.</div>`;
+  setTimeout(nextQ,1100);
+ }else{
+  if(!q.retry){S.bad++;L.w++}
+  q.retry=true;S.q.push(q);
+  $('fb').innerHTML=`<div class="no q">${to?'⏱ Waktu habis.':'Belum tepat.'} Pembahasan:</div><div class="ex">${esc(explain(q))}</div><div style="color:var(--m)">Soal ini masuk Latihan Ulang di akhir level.</div><button onclick="nextQ()">Lanjut</button>`;
+ }
+}
+function lvEnd(){
+ const L=S.lv[S.li];const last=S.li===S.lv.length-1;
+ shell(`<div class="q"><b class="ok">Level ${L.i+1} selesai!</b><br>Status: ${L.w?'<span class="no">Perlu diulang</span> ('+L.w+' soal perlu latihan ulang)':'<span class="ok">Sudah paham</span>'}</div>
+ <button onclick="${last?'recap()':'S.li++;lvStart()'}">${last?'Lihat Pesan Rahasia':'Lanjut ke Level '+(L.i+2)}</button>`);
+}
+function guess(){
+ stop();
+ $('qc').innerHTML=`<div class="q">Tebak kalimat rahasia:</div><input id="gs" autocomplete="off"><div id="gf"></div><button onclick="gchk()">TEBAK</button><button class="s" onclick="back()">Kembali</button>`;
+ $('gs').focus();$('gs').onkeydown=e=>{if(e.key==='Enter')gchk()};
+}
+function gchk(){
+ const v=$('gs').value.toUpperCase().replace(/\s+/g,' ').trim();
+ if(v===S.sent){S.lv.forEach(l=>l.p.forEach(p=>S.rev.add(p)));recap()}
+ else $('gf').innerHTML='<div class="no">Belum tepat, coba lagi. Tidak ada hukuman.</div>';
+}
+function back(){if(cur&&$('bi')&&S.q.concat([cur]).length&&cur){S.q.unshift(cur);nextQ()}else lvEnd()}
+function recap(){
+ stop();
+ for(let p=0;p<S.sent.length;p++)if(S.sent[p]!==' ')S.rev.add(p);
+ const sec=Math.round((Date.now()-S.t0)/1000);
+ $('main').innerHTML=`<div class="card"><div style="text-align:center;color:var(--m)">PESAN TERDEKRIPSI</div><div id="msg"></div><div class="big">${esc(S.sent)} 🎉</div>
+ <div class="sub">Misi selesai, Agen ${esc(S.name)}!</div></div>
+ <div class="card"><b>Rekap hasil</b><p>Benar pada percobaan pertama: <b class="ok">${S.ok}</b><br>Perlu latihan ulang: <b>${S.bad}</b></p>
+ <table><tr><th>Level</th><th>Status</th></tr>${S.lv.map(l=>`<tr><td>${l.i+1}. ${LV[l.i].n}</td><td class="${l.w?'no':'ok'}">${l.w?'Perlu diulang':'Sudah paham'}</td></tr>`).join('')}</table><br>
+ <div class="ex">Kode hasil (salin dan kirim ke guru):</div><input readonly value="${btoa(encodeURIComponent(JSON.stringify({n:S.name,o:S.ok,b:S.bad,s:sec,l:S.lv.map(l=>[l.i,l.w])})))}" onclick="this.select()"><br><button onclick="home()">Main Lagi</button></div>`;
+ drawMsg();
+}
+home();
+</script></body></html>
